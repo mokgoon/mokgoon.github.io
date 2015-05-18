@@ -10,6 +10,7 @@
 	
 	$.fn.myelinSlider = function(obj){
 		
+		
 		function f() { 
 		   var args = [].slice.call( arguments, 1, 3); //배열의 slice() 메서드를 빌려 쓴다. 
 		   return args; 
@@ -17,6 +18,7 @@
 		
 		function Elems(){};												// 객체 생성
 		var firstOnBoolean;												//	전역변수 생성
+		var autoSlider;
 		
 		// 기본 정의
 		var defaults = {
@@ -53,6 +55,9 @@
 		// 텍스트에 hover 이벤트가 발생시 실행
 		$(con.dataTxt).hover(
 			function() {
+				con.auto = false;
+				clearInterval(autoSlider);
+				
 				if($(con.dataTxt).hasClass('on')) $(con.dataTxt).removeClass('on');
 				$(this).addClass('on');
 				var tagetNm = $(this).children()[0].className;
@@ -64,12 +69,14 @@
 						$('#'+con.targetImg[i].id).hide();
 					}
 				}
+			}, function(){
+				autoSlider = setInterval(mgSlider,con.speed);
 			}
 		);
 		
 		// auto 가 true일때
 		if(con.auto){
-			var autoSlider = setInterval(mgSlider,con.speed);
+			autoSlider = setInterval(mgSlider,con.speed);
 		}
 		
 		function mgSlider(){
@@ -84,6 +91,7 @@
 							$(con.dataTxt).eq(0).addClass('on'); 
 							$('#'+con.targetImg[0].id).show();
 						}else{
+							// console.log($('#'+con.targetImg[k].id));
 							$('#'+con.targetImg[k].id).show();
 						}
 					}
