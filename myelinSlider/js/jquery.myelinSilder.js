@@ -1,12 +1,21 @@
 /*
- *  MyelinSlider v0.7
+ *  MyelinSlider v0.8
  *  Mokgoon 2014.04.25
+ *  Update 2016.03.08
  *  mokgoon@gmail.com
  *  http://www.mokgoon.com
  *
  */
 
 (function($){
+	
+	/*
+	 *  Type 
+	 *  content
+	 *  slideshow
+	 * 
+	 */
+	
 
 	$.fn.myelinSlider = function(obj){
 		var firstOnBoolean,
@@ -19,31 +28,62 @@
 			slideHtm,		// 슬라이드 텍스트 태그
 			slideA,
 			cnt = 1;
+			
 
 		slideImg = $(this).find('img');
 		slideA= $(this).find('a');
 		slideImgLen = $(this).find('li').length;
 
-		slideHtml = '<ul class="banner-txt"></ul>';
-		$(this).append(slideHtml);
-
-		function createLi(){
-			var slideLi = '<li></li>';
-
-			for(var i = 0; i < slideImgLen; i++){
-				var aL = creadteAlink($(slideImg)[i].alt);
-				$('.banner-txt').append(slideLi);
-				$('.banner-txt li').eq(i).append(aL);
-				cnt++;
+		if(obj.type === 'content'){
+			console.log('content');
+	        // content style 
+			slideHtml = '<ul class="content-txt"></ul>';
+			$(this).append(slideHtml);
+	
+			function contentCreateLi(){
+				
+				var slideLi = '<li></li>';
+	
+				for(var i = 0; i < slideImgLen; i++){							
+					var aL = creadteAlink($(slideImg)[i].alt, slideA[i].id);
+					$('.content-txt').append(slideLi);
+					$('.content-txt li').eq(i).append(aL);
+					cnt++;
+				}
 			}
+			contentCreateLi();
 		}
 
-		function creadteAlink(t){
-			var aLink = '<a href="#none" class="mb'+cnt+'">'+t+'</a>';
+
+		if(obj.type === 'slideshow'){
+			console.log('slideshow');
+			// slide show style
+			slideHtml = '<div class="slide_tab"><ul class="slideshow-txt"></ul></div>';
+			$(this).append(slideHtml);
+	
+			function slideshowCreateLi(){
+				var slideLi = '<li></li>';
+	
+				for(var i = 0; i < slideImgLen; i++){
+					
+					console.log(slideA[i].id);
+												
+					var aL = creadteAlink($(slideImg)[i].alt, slideA[i].id);
+					$('.slideshow-txt').append(slideLi);
+					$('.slideshow-txt li').eq(i).append(aL);
+					cnt++;
+				}
+			}
+			slideshowCreateLi();
+		}
+		
+		
+		function creadteAlink(t, _id){
+			var aLink = '<a href="#none" class="'+_id+'">'+t+'</a>';
 			return aLink;
 		}
 
-		createLi();
+		
 
 		function f() {
 			var args = [].slice.call( arguments, 1, 3);
@@ -76,30 +116,59 @@
 			targetImg : this.children().eq(0).children().children(),
 			targetTxt : this.children().eq(1).children().children()
 		};
-
+		
+		if(obj.type === 'slideshow'){
+			add.item = this.children().eq(1).children().eq(0).children().length;
+			console.log(add.item);
+			add.dataTxt = this.children().eq(1).children().eq(0).children();
+		}
+		
+		if(obj.type === 'content'){
+			add.item = this.children().eq(0).children().length;
+			add.dataTxt = this.children().eq(1).children();
+		}
+		
 		con = $.extend(defaults, add);
-
 
 		// 슬라이드 이미지와, 텍스트의 갯수가 일치 하지않을때, 경고 창알림
 		if(con.dataImgLen !== con.item){
 			errorFunction('배너이미지와 텍스트의 개수가 일치하지 않습니다.');
 		}
+		
+		
 		// 텍스트 첫번째에 on 클래스가 있는지 확인
-		firstOnBoolean = $(con.dataTxt).eq(0).hasClass('on');
+		if(obj.type === 'slideshow'){
+			firstOnBoolean = $(con.dataTxt).children().eq(0).hasClass('on');
+		}
+		
+		if(obj.type === 'content'){
+			firstOnBoolean = $(con.dataTxt).eq(0).hasClass('on');
+		}
+		
 		// 없으면 추가해준다.
 		if(!firstOnBoolean){
-			$(con.dataTxt).eq(0).addClass('on');
+				$(con.dataTxt).eq(0).addClass('on');
 		}
 
 		// 텍스트에 hover 이벤트가 발생시 실행
+		$(con.dataImg).hover(
+			function() {
+				con.auto = false;
+				clearInterval(autoSlider);
+			}, function(){
+				autoSlider = setInterval(mgSlider,con.speed);
+			}
+		);
+		
 		$(con.dataTxt).hover(
 			function() {
+				
 				con.auto = false;
 				clearInterval(autoSlider);
 
 				if($(con.dataTxt).hasClass('on')){$(con.dataTxt).removeClass('on');}
 				$(this).addClass('on');
-				var tagetNm = $(this).children()[0].className;
+				var tagetNm = $(this).children()[0].className; 
 
 				for(var i = 0; i < con.dataImgLen; i++){
 					if(tagetNm == con.targetImg[i].id){
@@ -114,12 +183,14 @@
 		);
 
 		// auto 가 true일때
+		
 		if(con.auto){
 			autoSlider = setInterval(mgSlider,con.speed);
 		}
 
 		function mgSlider(){
 			for(var k = 0; k < con.item; k++){
+				
 				if(con.dataTxt.eq(k).hasClass('on')){
 					con.dataTxt.eq(k).removeClass('on');
 					$('#'+con.targetImg[k].id).hide();
@@ -134,15 +205,20 @@
 						}
 					}
 				}
+				
 			}
+			
+			
 		}
+/*
 
 		function getScreenHeight(){
 			var eleHeight = $('.banner').css('height');
 			$('.banner-img > li > a > img').css('height',eleHeight);
 		}
 
-		getScreenHeight();
+		getScreenHeight();*/
+
 
 	}
 
